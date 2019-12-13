@@ -29,7 +29,10 @@
                     <input type="text" class="form-control" placeholder="" aria-label="Example text with button addon" aria-describedby="button-addon1">
                 </div>
             </div>
-            <div class="row p-2" id="city-hist">
+            <div class="row p-2">
+                <div class="col-md-12 p-0" id="city-hist">
+
+                </div>
 
             </div>
         </div>
@@ -87,8 +90,8 @@
         var existing = retrieveCityHis();
         existing.forEach(element => {
             console.log(element.city);
-            var newCity = $("<div>");
-            newCity.text(existing.city);
+            var newCity = $("<h3>").text(element.city);
+            newCity.addClass("bg-white m-1 font-weight-light");
             $("#city-hist").append(newCity);
         });
     };
