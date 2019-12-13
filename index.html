@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+
+<body>
+<header>      
+      <nav class="navbar navbar-dark bg-dark">
+        <span class="navbar-brand mb-0 h1 mx-auto">
+            <h1 class="text-center">Weather Dashboard</h1>
+        </span>
+      </nav>
+</header>
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-3 bg-light">
+            <div class="row p-2">
+                <h3 id="city-input">Search for a city</h3>
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                    <button class="btn btn-outline-secondary" type="button" id="button-addon1">Button</button>
+                    </div>
+                    <input type="text" class="form-control" placeholder="" aria-label="Example text with button addon" aria-describedby="button-addon1">
+                </div>
+            </div>
+            <div class="row p-2" id="city-hist">
+
+            </div>
+        </div>
+        <div class="col-md-9">
+            <div class="row border m-2">
+                <class class="col-md-9">
+                    <h1 id="cityDply">Atlanta</h1>
+                    <h3 id="tempDply">Temperature:</h3>
+                    <h5 id="humDply">Humidity:</h5>
+                    <h5 id="windDply">Wind Speed:</h5>
+                    <h5 id="uwDply">UV Index:</h5>
+                </class>
+            </div>
+            <div class="class row m-2">
+                <h3>5-day forecast</h3>
+            </div>
+        </div>
+    </div>
+</div>
+    
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script> -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+<!-- <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>  -->
+<script type="text/javascript">    
+    
+    function displayWeatherInfo(city) {
+        var APIkey = "83213cc0863c103e41e0b74b9de94208";
+        var queryURL = "https://api.openweathermap.org/data/2.5/weather?q=" + city + "&units=imperial&appid=" + APIkey;
+        $.ajax({
+        url: queryURL,
+        method: "GET"
+        }).then(function(response) {
+            $("#cityDply").text(response.name);
+            $("#tempDply").text("Temperature (F): " + response.main.temp);
+            $("#humDply").text("Humidity: " + response.main.humidity);
+            $("#windDply").text("Wind Speed: " + response.wind.speed);
+            saveCityInput(response.name);
+
+            var queryURL = "http://api.openweathermap.org/data/2.5/uvi?appid=" + APIkey + "&lat=" + response.coord.lat + "&lon=" + response.coord.lon;
+            $.ajax({
+            url: queryURL,
+            method: "GET"
+            }).then(function(response) {
+                $("#uwDply").text("UV Index: " + response.value)
+            });
+        });
+        
+
+    };
+
+    function displaySearchHis () {
+        var existing = retrieveCityHis();
+        existing.forEach(element => {
+            console.log(element.city);
+            var newCity = $("<div>");
+            newCity.text(existing.city);
+            $("#city-hist").append(newCity);
+        });
+    };
+
+    function displayCity () {};
+
+    $("#button-addon1").on("click", function(event) {
+        event.preventDefault();
+        // This line grabs the input from the textbox
+        var city = $(".form-control").val().trim();
+        saveCityInput(city);
+        displayWeatherInfo(city);
+      });
+    
+    function saveCityInput(city) {
+        // validate the fields
+        if (city === "") {
+            displayMessage(bodyBox, "Error: City cannot be blank");
+            return false;
+        }
+        // create user object from submission
+        existing = retrieveCityHis();
+        existing.push({city: city});
+        localStorage.setItem("cities", JSON.stringify(existing));
+        return true;
+    }
+
+    function retrieveCityHis () {
+        var existing = localStorage.getItem('cities');
+        // console.log(existing);
+        
+        return existing ? JSON.parse(existing) : [];
+    }
+
+    displaySearchHis();
+
+
+// //Current Location!!!
+// var geocoder;
+
+// if (navigator.geolocation) {
+//     navigator.geolocation.getCurrentPosition(successFunction, errorFunction);
+// } 
+// //Get the latitude and the longitude;
+// function successFunction(position) {
+//     var lat = position.coords.latitude;
+//     var lng = position.coords.longitude;
+//     codeLatLng(lat, lng)
+// }
+
+// function errorFunction(){
+//     alert("Geocoder failed");
+// }
+
+// function initialize() {
+// geocoder = new google.maps.Geocoder();
+// }
+
+//   function codeLatLng(lat, lng) {
+
+//     var latlng = new google.maps.LatLng(lat, lng);
+//     geocoder.geocode({'latLng': latlng}, function(results, status) {
+//       if (status == google.maps.GeocoderStatus.OK) {
+//       console.log(results)
+//         if (results[1]) {
+//          //formatted address
+//          alert(results[0].formatted_address)
+//         //find country name
+//              for (var i=0; i<results[0].address_components.length; i++) {
+//             for (var b=0;b<results[0].address_components[i].types.length;b++) {
+
+//             //there are different types that might hold a city admin_area_lvl_1 usually does in come cases looking for sublocality type will be more appropriate
+//                 if (results[0].address_components[i].types[b] == "administrative_area_level_1") {
+//                     //this is the object you are looking for
+//                     city= results[0].address_components[i];
+//                     break;
+//                 }
+//             }
+//         }
+//         //city data
+//         alert(city.short_name + " " + city.long_name)
+
+
+//         } else {
+//           alert("No results found");
+//         }
+//       } else {
+//         alert("Geocoder failed due to: " + status);
+//       }
+//     });
+//   }
+// initialize();
+// codeLatLng();
+</script>  
+</body>
+</html>
