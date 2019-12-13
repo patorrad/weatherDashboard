@@ -47,7 +47,19 @@
                 </class>
             </div>
             <div class="class row m-2">
-                <h3>5-day forecast</h3>
+                <div class="col-md-12">
+                    <div class="row m-2">
+                        <div class="col-md-12"></div>
+                        <h3>5-day forecast</h3>
+                    </div>
+                    <div class="row m-2 d-flex align-items-start" id="forecast">
+                        <!-- <div class="bg-primary m-2" style="width:200px; height:200px">
+                            hello
+                        </div>
+                        <div class="bg-primary m-2" style="width:200px; height:200px">
+                            hello
+                        </div> -->
+                </div>
             </div>
         </div>
     </div>
@@ -81,6 +93,25 @@
             }).then(function(response) {
                 $("#uwDply").text("UV Index: " + response.value)
             });
+
+            var queryURL = "http://api.openweathermap.org/data/2.5/forecast?q=" + response.name + "&appid=" + APIkey;
+            $.ajax({
+            url: queryURL,
+            method: "GET"
+            }).then(function(response) {
+                console.log(response);
+                for (let index = 7; index < 12; index++) {
+                    var newDay = $("<div>").addClass("bg-primary text-white m-2")
+                    newDay.text(response.list[index].weather[0].icon);
+                    newDay.text("Temp: " + response.list[index].main.temp + "F");
+                    newDay.text("Humidity: " + response.list[index].main.humidity + "%");
+                    newDay.attr("style", "width:200px; height:200px")
+                    // newCity.addClass("bg-white m-1 font-weight-light");
+                    $("#forecast").append(newDay);                    
+                }
+                
+                    
+            });
         });
         
 
@@ -89,7 +120,6 @@
     function displaySearchHis () {
         var existing = retrieveCityHis();
         existing.forEach(element => {
-            console.log(element.city);
             var newCity = $("<h3>").text(element.city);
             newCity.addClass("bg-white m-1 font-weight-light");
             $("#city-hist").append(newCity);
