@@ -40,7 +40,8 @@
         <div class="col-md-9">
             <div class="row border m-2">
                 <class class="col-md-9">
-                    <h1 id="cityDply">Atlanta</h1>
+                    <h1 id="cityDply"></h1>
+                    <img id="icon-main">
                     <h3 id="tempDply">Temperature:</h3>
                     <h5 id="humDply">Humidity:</h5>
                     <h5 id="windDply">Wind Speed:</h5>
@@ -72,6 +73,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 <!-- <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>  -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
 <script type="text/javascript">    
     
     function displayWeatherInfo(city) {
@@ -82,11 +84,13 @@
         url: queryURL,
         method: "GET"
         }).then(function(response) {
-            $("#cityDply").text(response.name);
+            console.log(response); 
+            
+            $("#cityDply").text(response.name + " " + moment(response.dt*1000).format('L'));
+            $("#icon-main").attr("src", "http://openweathermap.org/img/wn/" + response.weather[0].icon + "@2x.png");
             $("#tempDply").text("Temperature (F): " + response.main.temp);
-            $("#humDply").text("Humidity: " + response.main.humidity);
-            $("#windDply").text("Wind Speed: " + response.wind.speed);
-            // saveCityInput(response.name);
+            $("#humDply").text("Humidity: " + response.main.humidity + "%");
+            $("#windDply").text("Wind Speed: " + response.wind.speed + "MPH");
 
             var queryURL = "http://api.openweathermap.org/data/2.5/uvi?appid=" + APIkey + "&lat=" + response.coord.lat + "&lon=" + response.coord.lon;
             var uv;
@@ -99,32 +103,31 @@
             });
             saveCityInput(response.name, response.main.temp, response.main.humidity, response.wind.speed, uv);
 
-            var queryURL = "http://api.openweathermap.org/data/2.5/forecast?q=" + response.name + "&appid=" + APIkey;
+            var queryURL = "http://api.openweathermap.org/data/2.5/forecast?q=" + response.name + "&units=imperial&appid=" + APIkey;
             $.ajax({
             url: queryURL,
             method: "GET"
             }).then(function(response) {
-                               
-                for (let index = 7; index < 12; index++) {
-                    var newDay = $("<div>").addClass("col-md-2 bg-primary text-white m-2")                    
+                for (let index = 7; index < 47; index += 8) {
+                    var newDay = $("<div>").addClass("col-md-2 bg-primary text-white m-2");
+                    var temp = $("<h5>").text(moment(response.list[index].dt*1000).format('L'));
+                    newDay.append(temp);                    
                     var icon = $("<img>").attr("src", "http://openweathermap.org/img/wn/" + response.list[index].weather[0].icon + "@2x.png");
                     newDay.append(icon);
                     var temp = $("<h5>").text("Temp: " + response.list[index].main.temp + "F");
                     newDay.append(temp);
                     var hum = $("<h5>").text("Humidity: " + response.list[index].main.humidity + "%");
                     newDay.append(hum);
-                    // newDay.attr("style", "width:200px; height:200px");
-                    // newCity.addClass("bg-white m-1 font-weight-light");
                     $("#forecast").append(newDay);                    
                 }
             });
             
         });
-        
-
+        displaySearchHis();
     };
 
     function displaySearchHis () {
+        $("#city-hist").empty();
         var existing = retrieveCityHis("cities");
         if (existing.length != 0)
         {
@@ -142,15 +145,6 @@
         $("#uvDply").text("UV Index: " + existing[0].uv);
         }
     };
-
-    // function displayLastCity (city) {
-    //     var existing = retrieveCityHis("lastCity");
-    //     $("#cityDply").text(existing.city);
-    //     $("#tempDply").text("Temperature (F): " + existing.temp);
-    //     $("#humDply").text("Humidity: " + existing.humidity);
-    //     $("#windDply").text("Wind Speed: " + existing.wind);
-    //     $("#uvDply").text("UV Index: " + existing.uv);
-    // };
 
     $("#button-addon1").on("click", function(event) {
         event.preventDefault();
@@ -173,13 +167,6 @@
         localStorage.setItem("cities", JSON.stringify(existing));
         return true;
     }
-    // function saveLastCityInput(city, temp, hum, wind, uv) {
-    //     // create user object from submission
-    //     existing = retrieveCityHis("lastCity");
-    //     existing.push({city: city, temp: temp, humidity: hum, wind: wind, uv: uv, });
-    //     localStorage.setItem("lastCity", JSON.stringify(existing));
-    //     return true;
-    // }
 
     function retrieveCityHis (arrayName) {
         var existing = localStorage.getItem(arrayName);
@@ -191,8 +178,6 @@
     }
 
     displaySearchHis();
-    // retrieveCityHis("lastCity");
-
 
 // //Current Location!!!
 // var geocoder;
