@@ -76,6 +76,7 @@
     function displayWeatherInfo(city) {
         var APIkey = "83213cc0863c103e41e0b74b9de94208";
         var queryURL = "https://api.openweathermap.org/data/2.5/weather?q=" + city + "&units=imperial&appid=" + APIkey;
+        var uv;
         $.ajax({
         url: queryURL,
         method: "GET"
@@ -84,79 +85,112 @@
             $("#tempDply").text("Temperature (F): " + response.main.temp);
             $("#humDply").text("Humidity: " + response.main.humidity);
             $("#windDply").text("Wind Speed: " + response.wind.speed);
-            saveCityInput(response.name);
+            // saveCityInput(response.name);
 
             var queryURL = "http://api.openweathermap.org/data/2.5/uvi?appid=" + APIkey + "&lat=" + response.coord.lat + "&lon=" + response.coord.lon;
+            var uv;
             $.ajax({
             url: queryURL,
             method: "GET"
             }).then(function(response) {
                 $("#uwDply").text("UV Index: " + response.value)
+                uv = response.value;                
             });
+            saveCityInput(response.name, response.main.temp, response.main.humidity, response.wind.speed, uv);
 
             var queryURL = "http://api.openweathermap.org/data/2.5/forecast?q=" + response.name + "&appid=" + APIkey;
             $.ajax({
             url: queryURL,
             method: "GET"
             }).then(function(response) {
-                console.log(response);
+                               
                 for (let index = 7; index < 12; index++) {
-                    var newDay = $("<div>").addClass("bg-primary text-white m-2")
-                    newDay.text(response.list[index].weather[0].icon);
-                    newDay.text("Temp: " + response.list[index].main.temp + "F");
-                    newDay.text("Humidity: " + response.list[index].main.humidity + "%");
-                    newDay.attr("style", "width:200px; height:200px")
+                    var newDay = $("<div>").addClass("col-md-2 bg-primary text-white m-2")                    
+                    var icon = $("<img>").attr("src", "http://openweathermap.org/img/wn/" + response.list[index].weather[0].icon + "@2x.png");
+                    newDay.append(icon);
+                    var temp = $("<h5>").text("Temp: " + response.list[index].main.temp + "F");
+                    newDay.append(temp);
+                    var hum = $("<h5>").text("Humidity: " + response.list[index].main.humidity + "%");
+                    newDay.append(hum);
+                    // newDay.attr("style", "width:200px; height:200px");
                     // newCity.addClass("bg-white m-1 font-weight-light");
                     $("#forecast").append(newDay);                    
                 }
-                
-                    
             });
+            
         });
         
 
     };
 
     function displaySearchHis () {
-        var existing = retrieveCityHis();
-        existing.forEach(element => {
-            var newCity = $("<h3>").text(element.city);
+        var existing = retrieveCityHis("cities");
+        if (existing.length != 0)
+        {
+        var numberOfCities = 10;// Cities to display    
+        if (existing.length < 10) numberOfCities = existing.length; 
+        for (let index = 0; index < numberOfCities; index++) {          
+            var newCity = $("<h3>").text(existing[index].city);
             newCity.addClass("bg-white m-1 font-weight-light");
             $("#city-hist").append(newCity);
-        });
+        }
+        $("#cityDply").text(existing[0].city);
+        $("#tempDply").text("Temperature (F): " + existing[0].temp);
+        $("#humDply").text("Humidity: " + existing[0].humidity);
+        $("#windDply").text("Wind Speed: " + existing[0].wind);
+        $("#uvDply").text("UV Index: " + existing[0].uv);
+        }
     };
 
-    function displayCity () {};
+    // function displayLastCity (city) {
+    //     var existing = retrieveCityHis("lastCity");
+    //     $("#cityDply").text(existing.city);
+    //     $("#tempDply").text("Temperature (F): " + existing.temp);
+    //     $("#humDply").text("Humidity: " + existing.humidity);
+    //     $("#windDply").text("Wind Speed: " + existing.wind);
+    //     $("#uvDply").text("UV Index: " + existing.uv);
+    // };
 
     $("#button-addon1").on("click", function(event) {
         event.preventDefault();
         // This line grabs the input from the textbox
         var city = $(".form-control").val().trim();
         saveCityInput(city);
+        // $("#forecast").remove("*"); 
         displayWeatherInfo(city);
       });
     
-    function saveCityInput(city) {
+    function saveCityInput(city, temp, hum, wind, uv) {
         // validate the fields
-        if (city === "") {
-            displayMessage(bodyBox, "Error: City cannot be blank");
-            return false;
-        }
+        // if (city === "") {
+        //     displayMessage(bodyBox, "Error: City cannot be blank");
+        //     return false;
+        // }
         // create user object from submission
-        existing = retrieveCityHis();
-        existing.push({city: city});
+        existing = retrieveCityHis("cities");
+        existing.push({city: city, temp: temp, humidity: hum, wind: wind, uv: uv});
         localStorage.setItem("cities", JSON.stringify(existing));
         return true;
     }
+    // function saveLastCityInput(city, temp, hum, wind, uv) {
+    //     // create user object from submission
+    //     existing = retrieveCityHis("lastCity");
+    //     existing.push({city: city, temp: temp, humidity: hum, wind: wind, uv: uv, });
+    //     localStorage.setItem("lastCity", JSON.stringify(existing));
+    //     return true;
+    // }
 
-    function retrieveCityHis () {
-        var existing = localStorage.getItem('cities');
-        // console.log(existing);
-        
+    function retrieveCityHis (arrayName) {
+        var existing = localStorage.getItem(arrayName);
         return existing ? JSON.parse(existing) : [];
     }
 
+    function deleteForecast() {
+        $("#forecast").remove("*");
+    }
+
     displaySearchHis();
+    // retrieveCityHis("lastCity");
 
 
 // //Current Location!!!
