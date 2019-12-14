@@ -28,6 +28,7 @@
                     </div>
                     <input type="text" class="form-control" placeholder="" aria-label="Example text with button addon" aria-describedby="button-addon1">
                 </div>
+                <p id="error-msg"></p>
             </div>
             <div class="row p-2">
                 <div class="col-md-12 p-0" id="city-hist">
@@ -155,17 +156,17 @@
         event.preventDefault();
         // This line grabs the input from the textbox
         var city = $(".form-control").val().trim();
-        saveCityInput(city);
-        // $("#forecast").remove("*"); 
+        // saveCityInput(city);
+        $("#forecast").empty(); 
         displayWeatherInfo(city);
       });
     
     function saveCityInput(city, temp, hum, wind, uv) {
         // validate the fields
-        // if (city === "") {
-        //     displayMessage(bodyBox, "Error: City cannot be blank");
-        //     return false;
-        // }
+        if (city === "") {
+            displayMessage($("#error-msg"), "Error: City cannot be blank");
+            return false;
+        }
         // create user object from submission
         existing = retrieveCityHis("cities");
         existing.push({city: city, temp: temp, humidity: hum, wind: wind, uv: uv});
